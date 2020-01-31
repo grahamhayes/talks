@@ -93,13 +93,82 @@ gr@ham.ie
 ---
 
 # Integrations
+## OpenStack - Heat
+
+```yaml
+heat_template_version: 2015-04-30
+
+description: Simple template to deploy a single DNS Zone
+
+resources:
+  heat_example_com:
+    type: OS::Designate::Zone
+    properties:
+      email: host@example.com
+      name: heat.example.com.
+      type: PRIMARY
+```
+
+---
+
+# Integrations
 ## External
 
 - Ansible
 - Terraform
 - Kubernetes External DNS
-- certbot
+- certbot - (certbot-dns-openstack) DNS-01 ACME
 - SDKs
+
+---
+
+# Integrations
+## External - Ansible
+
+```yaml
+---
+- name: Example Zone
+  hosts: localhost
+
+  tasks:
+  - os_zone:
+      cloud: devstack
+      state: present
+      name: ansible.example.com.
+      zone_type: primary
+      email: test@example.net
+      description: Test zone
+      ttl: 3600
+```
+
+---
+
+# Integrations
+## External - Terraform
+
+```
+provider "openstack" {
+  cloud   = "devstack"
+}
+
+resource "openstack_dns_zone_v2" "workshop_example_com" {
+  name        = "workshop.example.com."
+  email       = "jdoe@example.com"
+  description = "An example zone"
+  ttl         = 3000
+  type        = "PRIMARY"
+}
+
+resource "openstack_dns_recordset_v2" "www_workshop_example_com" {
+  zone_id     = "${openstack_dns_zone_v2.workshop_example_com.id}"
+  name        = "www.workshop.example.com."
+  description = "An example record set"
+  ttl         = 3000
+  type        = "A"
+  records     = ["10.0.0.1"]
+}
+```
+
 
 ---
 
@@ -244,3 +313,4 @@ HTTP/1.1 200 OK
 - https://opendev.org/openstack/designate
 - IRC: `#openstack-dns` on Freenode
 - openstack-discuss@lists.openstack.org
+- https://gra.ham.ie/FOSDEM-2020/slides.pdf
